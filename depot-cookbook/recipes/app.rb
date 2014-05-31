@@ -1,5 +1,7 @@
 include_recipe "git"
+include_recipe "build-essential"
 
+package "mysql-devel"
 
 db_server = search(:node, "tags:*depot-db-server*").first
 
