@@ -4,7 +4,7 @@ maintainer_email 'YOUR_EMAIL'
 license          'All rights reserved'
 description      'Installs/Configures depot-cookbook'
 long_description 'Installs/Configures depot-cookbook'
-version          '0.1.11'
+version          '0.1.12'
 
 depends 'yum'
 depends 'mysql'

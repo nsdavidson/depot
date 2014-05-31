@@ -5,7 +5,7 @@ db_server = search(:node, "tags:*depot-db-server*").first
 
 application "depot" do
   path '/var/www/depot'
-  repository 'https://github.com/nsdavidson/depot.git'
+  repository 'git://github.com/nsdavidson/depot.git'
 
   rails do
     bundler true
