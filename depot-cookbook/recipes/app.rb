@@ -7,6 +7,7 @@ include_recipe "passenger_apache2::mod_rails"
 include_recipe "passenger_apache2"
 include_recipe 'chef-sugar::default'
 
+gem_package "bundler"
 
 db_server = search(:node, "tags:*depot-db-server*").first
 
@@ -17,7 +18,7 @@ deploy_revision "/var/www/depot" do
   environment "RAILS_ENV" => "production"
   revision "HEAD"
   action :deploy
-  migration_command "rake db:migrate RAILS_ENV=production"
+  migration_command "/usr/local/bin/bundle exec /usr/local/bin/rake db:create db:migrate RAILS_ENV=production"
   migrate true
   before_migrate do
     directory "/var/www/depot/shared/config" do
@@ -38,8 +39,7 @@ deploy_revision "/var/www/depot" do
 
     execute "bundle_install" do
       cwd release_path
-      command "bundle install --without development test doc"
-      creates "/tmp/something"
+      command "/usr/local/bin/bundle install --without development test doc"
       action :run
     end
     
@@ -51,8 +51,9 @@ end
 
 web_app "depot" do
   docroot '/var/www/depot'
-  cookbook "passenger"
+  cookbook "passenger_apache2"
 
   server_name node[:fqdn]
+  server_aliases [ "depot", node[:hostname] ]
   rails_env "production"
 end
