@@ -4,3 +4,13 @@
 require File.expand_path('../config/application', __FILE__)
 
 Depot::Application.load_tasks
+
+require 'aws-sdk-core'
+
+Aws.config[:region] = 'us-east-1'
+
+task :build_dev do
+  cfn = Aws::CloudFormation.new
+  template = File.read("depot-dev.template")
+  cfn.create_stack(stack_name: "depot-dev", template_body: template)
+end

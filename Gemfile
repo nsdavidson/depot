@@ -32,12 +32,6 @@ gem 'mysql2',         group: :production
 
 gem 'therubyracer'
 
-# Use jquery as the JavaScript library
-gem 'jquery-rails'
-
-# Turbolinks makes following links in your web application faster. Read more: https://github.com/rails/turbolinks
-gem 'turbolinks'
-
 gem 'rspec'
 
 # Use ActiveModel has_secure_password
