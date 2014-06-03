@@ -18,7 +18,7 @@ deploy_revision "/var/www/depot" do
   environment "RAILS_ENV" => "production"
   revision "HEAD"
   action :deploy
-  migration_command "/usr/local/bin/bundle exec /usr/local/bin/rake db:create db:migrate RAILS_ENV=production"
+  migration_command "/usr/local/bin/bundle exec /usr/local/bin/rake db:create db:migrate db:seed RAILS_ENV=production"
   migrate true
   before_migrate do
     directory "/var/www/depot/shared/config" do
