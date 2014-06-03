@@ -3,6 +3,8 @@ include_recipe "git"
 package "ruby-devel"
 package "mysql-devel"
 
+chef_gem "hipchat"
+
 include_recipe "passenger_apache2::mod_rails"
 include_recipe "passenger_apache2"
 include_recipe 'chef-sugar::default'
@@ -10,8 +12,6 @@ include_recipe 'chef-sugar::default'
 gem_package "bundler"
 
 db_server = search(:node, "tags:*depot-db-server*").first
-
-
 
 deploy_revision "/var/www/depot" do
   repo 'https://github.com/nsdavidson/depot.git'
@@ -50,8 +50,8 @@ end
 
 
 web_app "depot" do
-  docroot '/var/www/depot'
-  cookbook "passenger_apache2"
+  docroot '/var/www/depot/current/public'
+  template 'depot.conf.erb'
 
   server_name node[:fqdn]
   server_aliases [ "depot", node[:hostname] ]
