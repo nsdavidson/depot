@@ -1,0 +1,339 @@
+{
+  "AWSTemplateFormatVersion" : "2010-09-09",
+
+  "Description" : "AWS CloudFormation for CD",
+
+  "Parameters" : {
+
+    "KeyName": {
+      "Description" : "Name of an existing EC2 KeyPair to enable SSH access to the instances",
+      "Type": "String",
+      "MinLength": "1",
+      "MaxLength": "255",
+      "AllowedPattern" : "[\\x20-\\x7E]*",
+      "ConstraintDescription" : "can contain only ASCII characters.",
+      "Default" : "ndavidson"
+    },
+
+    "VpcId" : {
+      "Type" : "String",
+      "Description" : "VpcId of your existing Virtual Private Cloud (VPC)",
+      "Default" : "vpc-ffa66e9a"
+    },
+
+    "Subnets" : {
+      "Type" : "CommaDelimitedList",
+      "Description" : "The list of SubnetIds in your Virtual Private Cloud (VPC)",
+      "Default" : "subnet-21b5ba67"
+    },
+
+    "AZs" : {
+      "Type" : "CommaDelimitedList",
+      "Description" : "The list of AvailabilityZones for your Virtual Private Cloud (VPC)",
+      "Default" : "us-east-1a"
+    },
+
+    "WebServerInstanceType" : {
+      "Description" : "WebServer EC2 instance type",
+      "Type" : "String",
+      "Default" : "t1.micro",
+      "AllowedValues" : [ "t1.micro","m1.small","m1.medium","m1.large","m1.xlarge","m2.xlarge","m2.2xlarge","m2.4xlarge","m3.xlarge","m3.2xlarge","c1.medium","c1.xlarge","cc1.4xlarge","cc2.8xlarge","cg1.4xlarge"],
+      "ConstraintDescription" : "must be a valid EC2 instance type."
+    },
+
+    "WebServerInstanceCount" : {
+      "Description" : "Number of EC2 instances to launch",
+      "Type" : "Number",
+      "Default" : "1"
+    },
+
+    "AppServerInstanceType" : {
+      "Description" : "WebServer EC2 instance type",
+      "Type" : "String",
+      "Default" : "m1.small",
+      "AllowedValues" : [ "t1.micro","m1.small","m1.medium","m1.large","m1.xlarge","m2.xlarge","m2.2xlarge","m2.4xlarge","m3.medium","m3.xlarge","m3.2xlarge","c1.medium","c1.xlarge","cc1.4xlarge","cc2.8xlarge","cg1.4xlarge"],
+      "ConstraintDescription" : "must be a valid EC2 instance type."
+    },
+
+    "AppServerInstanceCount" : {
+      "Description" : "Number of EC2 instances to launch",
+      "Type" : "Number",
+      "Default" : "1"
+    },
+
+    "DBServerInstanceType" : {
+      "Description" : "WebServer EC2 instance type",
+      "Type" : "String",
+      "Default" : "t1.micro",
+      "AllowedValues" : [ "t1.micro","m1.small","m1.medium","m1.large","m1.xlarge","m2.xlarge","m2.2xlarge","m2.4xlarge","m3.xlarge","m3.2xlarge","c1.medium","c1.xlarge","cc1.4xlarge","cc2.8xlarge","cg1.4xlarge"],
+      "ConstraintDescription" : "must be a valid EC2 instance type."
+    },
+
+    "WebServerPort" : {
+      "Description" : "TCP/IP port of the web server",
+      "Type" : "String",
+      "Default" : "80"
+    }
+  },
+
+  "Mappings" : {
+    "AWSInstanceType2Arch" : {
+      "t1.micro"    : { "Arch" : "64" },
+      "m1.small"    : { "Arch" : "64" },
+      "m1.medium"   : { "Arch" : "64" },
+      "m1.large"    : { "Arch" : "64" },
+      "m1.xlarge"   : { "Arch" : "64" },
+      "m2.xlarge"   : { "Arch" : "64" },
+      "m2.2xlarge"  : { "Arch" : "64" },
+      "m2.4xlarge"  : { "Arch" : "64" },
+      "m3.medium"   : { "Arch" : "64" },
+      "m3.xlarge"   : { "Arch" : "64" },
+      "m3.2xlarge"  : { "Arch" : "64" },
+      "c1.medium"   : { "Arch" : "64" },
+      "c1.xlarge"   : { "Arch" : "64" }
+    },
+
+    "AWSRegionArch2AMI" : {
+      "us-east-1"      : { "32" : "ami-178e927e", "64" : "ami-ba56a0d2" },
+      "us-west-1"      : { "32" : "ami-458fd300", "64" : "ami-b18ed2f4" },
+      "us-west-2"      : { "32" : "ami-fcff72cc", "64" : "ami-feff72ce" },
+      "eu-west-1"      : { "32" : "ami-018bb975", "64" : "ami-998bb9ed" },
+      "sa-east-1"      : { "32" : "ami-a039e6bd", "64" : "ami-a239e6bf" },
+      "ap-southeast-1" : { "32" : "ami-425a2010", "64" : "ami-5e5a200c" },
+      "ap-southeast-2" : { "32" : "ami-f98512c3", "64" : "ami-43851279" },
+      "ap-northeast-1" : { "32" : "ami-7871c579", "64" : "ami-7671c577" }
+    }
+  },
+
+  "Resources" : {
+
+    "WebServerGroup" : {
+      "DependsOn" : "AppServerGroup",
+      "Type" : "AWS::AutoScaling::AutoScalingGroup",
+      "Properties" : {
+        "AvailabilityZones" : { "Ref" : "AZs" },
+        "VPCZoneIdentifier" : { "Ref" : "Subnets" },
+        "LaunchConfigurationName" : { "Ref" : "WebServerLaunchConfig" },
+        "MinSize" : "1",
+        "MaxSize" : "10",
+        "DesiredCapacity" : { "Ref" : "WebServerInstanceCount" },
+        "LoadBalancerNames" : [ { "Ref" : "ElasticLoadBalancer" } ]
+      }
+    },
+
+    "WebServerLaunchConfig" : {
+      "Type" : "AWS::AutoScaling::LaunchConfiguration",
+      "Metadata" : {
+        "AWS::CloudFormation::Init" : {
+          "config" : {
+            "files" : {
+              "/tmp/chef-runlist.json" : {
+                "content" : "{ \"run_list\" : [ \"depot-cookbook::web\" ] }",
+                "owner" : "root",
+                "group" : "root",
+                "mode" : "000644"
+              },
+              "/tmp/chef-tags.json" : {
+                "content" : "{  \"tags\" : [ \"depot-web-server\" ] }",
+                "owner" : "root",
+                "group" : "root",
+                "mode" : "000644"
+              }
+            }
+          }
+        }
+      },
+      "Properties" : {
+        "ImageId" : { "Fn::FindInMap" : [ "AWSRegionArch2AMI", { "Ref" : "AWS::Region" },
+                                          { "Fn::FindInMap" : [ "AWSInstanceType2Arch", { "Ref" : "WebServerInstanceType" },
+                                          "Arch" ] } ] },
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["",[
+            "#!/bin/bash","\n",
+            "yum update -y aws-cfn-bootstrap","\n",
+            "/opt/aws/bin/cfn-init -s ", { "Ref" : "AWS::StackId" }, " -r WebServerLaunchConfig ",
+            "         --region ", { "Ref" : "AWS::Region" }, "\n",
+            "wget https://s3.amazonaws.com/ops-utils/aws_bootstrap.sh","\n",
+            "chmod +x aws_bootstrap.sh","\n",
+            "./aws_bootstrap.sh","\n",
+            "chef-client -j /tmp/chef-tags.json -E _default","\n",
+            "chef-client -j /tmp/chef-runlist.json" ]]}},
+        "SecurityGroups" :  [ "sg-7b14841e" ],
+        "InstanceType" : { "Ref" : "WebServerInstanceType" },
+        "KeyName" : { "Ref" : "KeyName" },
+        "AssociatePublicIpAddress" : "true"
+      }
+    },
+
+    "AppServerGroup" : {
+      "DependsOn" : "DBServerGroup",
+      "Type" : "AWS::AutoScaling::AutoScalingGroup",
+      "Properties" : {
+        "AvailabilityZones" : { "Ref" : "AZs" },
+        "VPCZoneIdentifier" : { "Ref" : "Subnets" },
+        "LaunchConfigurationName" : { "Ref" : "AppServerLaunchConfig" },
+        "MinSize" : "1",
+        "MaxSize" : "10",
+        "DesiredCapacity" : { "Ref" : "AppServerInstanceCount" }
+      }
+    },
+
+    "AppServerLaunchConfig" : {
+      "Type" : "AWS::AutoScaling::LaunchConfiguration",
+      "Metadata" : {
+        "AWS::CloudFormation::Init" : {
+          "config" : {
+            "files" : {
+              "/tmp/chef-runlist.json" : {
+                "content" : "{ \"run_list\" : [ \"depot-cookbook::app\" ] }",
+                "owner" : "root",
+                "group" : "root",
+                "mode" : "000644"
+              },
+              "/tmp/chef-tags.json" : {
+                "content" : "{ \"tags\" : [ \"depot-app-server\"] }",
+                "owner" : "root",
+                "group" : "root",
+                "mode" : "000644"
+              }
+            }
+          }
+        }
+      },
+      "Properties" : {
+        "ImageId" : { "Fn::FindInMap" : [ "AWSRegionArch2AMI", { "Ref" : "AWS::Region" },
+                                          { "Fn::FindInMap" : [ "AWSInstanceType2Arch", { "Ref" : "AppServerInstanceType" },
+                                          "Arch" ] } ] },
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["",[
+            "#!/bin/bash","\n",
+            "yum update -y aws-cfn-bootstrap","\n",
+            "/opt/aws/bin/cfn-init -s ", { "Ref" : "AWS::StackId" }, " -r AppServerLaunchConfig ",
+            "         --region ", { "Ref" : "AWS::Region" }, "\n",
+            "wget https://s3.amazonaws.com/ops-utils/aws_bootstrap.sh","\n",
+            "chmod +x aws_bootstrap.sh","\n",
+            "./aws_bootstrap.sh","\n",
+            "chef-client -j /tmp/chef-tags.json -E _default","\n",
+            "chef-client -j /tmp/chef-runlist.json" ]]}},
+        "SecurityGroups" : [ "sg-7b14841e" ],
+        "InstanceType" : { "Ref" : "AppServerInstanceType" },
+        "KeyName" : { "Ref" : "KeyName" },
+        "AssociatePublicIpAddress" : "true"
+      }
+    },
+
+    "DBServerGroup" : {
+      "Type" : "AWS::AutoScaling::AutoScalingGroup",
+      "Properties" : {
+        "AvailabilityZones" : { "Ref" : "AZs" },
+        "VPCZoneIdentifier" : { "Ref" : "Subnets" },
+        "LaunchConfigurationName" : { "Ref" : "DBServerLaunchConfig" },
+        "MinSize" : "1",
+        "MaxSize" : "1",
+        "DesiredCapacity" : "1"
+      }
+    },
+
+    "DBServerLaunchConfig" : {
+      "Type" : "AWS::AutoScaling::LaunchConfiguration",
+      "Metadata" : {
+        "AWS::CloudFormation::Init" : {
+          "config" : {
+            "files" : {
+              "/tmp/chef-runlist.json" : {
+                "content" : "{ \"run_list\" : [ \"depot-cookbook::db\" ] }",
+                "owner" : "root",
+                "group" : "root",
+                "mode" : "000644"
+              },
+              "/tmp/chef-tags.json" : {
+                "content" : "{ \"tags\" : [ \"depot-db-server\"] }",
+                "owner" : "root",
+                "group" : "root",
+                "mode" : "000644"
+              }
+            }
+          }
+        }
+      },
+      "Properties" : {
+        "ImageId" : { "Fn::FindInMap" : [ "AWSRegionArch2AMI", { "Ref" : "AWS::Region" },
+                                          { "Fn::FindInMap" : [ "AWSInstanceType2Arch", { "Ref" : "AppServerInstanceType" },
+                                          "Arch" ] } ] },
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["",[
+            "#!/bin/bash","\n",
+            "yum update -y aws-cfn-bootstrap","\n",
+            "/opt/aws/bin/cfn-init -s ", { "Ref" : "AWS::StackId" }, " -r DBServerLaunchConfig ",
+            "         --region ", { "Ref" : "AWS::Region" }, "\n",
+            "wget https://s3.amazonaws.com/ops-utils/aws_bootstrap.sh","\n",
+            "chmod +x aws_bootstrap.sh","\n",
+            "./aws_bootstrap.sh","\n",
+            "chef-client -j /tmp/chef-tags.json -E _default","\n",
+            "chef-client -j /tmp/chef-runlist.json" ]]}},
+        "SecurityGroups" : [ "sg-26ba2343" ],
+        "InstanceType" : { "Ref" : "DBServerInstanceType" },
+        "KeyName" : { "Ref" : "KeyName" },
+        "AssociatePublicIpAddress" : "true"
+      }
+    },
+
+    "ElasticLoadBalancer" : {
+      "Type" : "AWS::ElasticLoadBalancing::LoadBalancer",
+      "Properties" : {
+        "SecurityGroups" : [ { "Ref" : "LoadBalancerSecurityGroup" } ],
+        "Subnets" : { "Ref" : "Subnets" },
+        "Listeners" : [ {
+          "LoadBalancerPort" : "80",
+          "InstancePort" : { "Ref" : "WebServerPort" },
+          "Protocol" : "HTTP"
+        } ],
+        "HealthCheck" : {
+          "Target" : { "Fn::Join" : [ "", ["HTTP:", { "Ref" : "WebServerPort" }, "/products"]]},
+          "HealthyThreshold" : "3",
+          "UnhealthyThreshold" : "5",
+          "Interval" : "30",
+          "Timeout" : "25"
+        }
+      }
+    },
+
+    "LoadBalancerSecurityGroup" : {
+      "Type" : "AWS::EC2::SecurityGroup",
+      "Properties" : {
+        "GroupDescription" : "Enable HTTP access on port 80",
+        "VpcId" : { "Ref" : "VpcId" },
+        "SecurityGroupIngress" : [ {
+          "IpProtocol" : "tcp",
+          "FromPort" : "80",
+          "ToPort" : "80",
+          "CidrIp" : "0.0.0.0/0"
+        } ],
+        "SecurityGroupEgress" : [ {
+          "IpProtocol" : "tcp",
+          "FromPort" : { "Ref" : "WebServerPort" },
+          "ToPort" : { "Ref" : "WebServerPort" },
+          "CidrIp" : "0.0.0.0/0"
+        } ]
+      }
+    },
+
+    "InstanceSecurityGroup" : {
+      "Type" : "AWS::EC2::SecurityGroup",
+      "Properties" : {
+        "GroupDescription" : "Enable HTTP access on the configured port",
+        "VpcId" : { "Ref" : "VpcId" },
+        "SecurityGroupIngress" : [ {
+          "IpProtocol" : "tcp",
+          "FromPort" : "22",
+          "ToPort" : "22",
+          "SourceSecurityGroupId" : { "Ref" : "LoadBalancerSecurityGroup" }
+        } ]
+      }
+    }
+  },
+
+  "Outputs" : {
+    "URL" : {
+      "Description" : "URL of the website",
+      "Value" :  { "Fn::Join" : [ "", [ "http://", { "Fn::GetAtt" : [ "ElasticLoadBalancer", "DNSName" ]}]]}
+    }
+  }
+}
