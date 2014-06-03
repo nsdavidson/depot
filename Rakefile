@@ -2,10 +2,10 @@
 # for example lib/tasks/capistrano.rake, and they will automatically be available to Rake.
 
 require File.expand_path('../config/application', __FILE__)
+require 'aws-sdk-core'
+
 
 Depot::Application.load_tasks
-
-require 'aws-sdk-core'
 
 Aws.config[:region] = 'us-east-1'
 
