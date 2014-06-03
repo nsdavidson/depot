@@ -34,6 +34,8 @@ gem 'therubyracer'
 
 gem 'rspec'
 
+gem 'aws-sdk-core'
+
 # Use ActiveModel has_secure_password
 # gem 'bcrypt', '~> 3.1.7'
 
