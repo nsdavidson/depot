@@ -23,16 +23,16 @@ deploy_revision "/var/www/depot" do
   before_migrate do
     directory "/var/www/depot/shared/config" do
       recursive true
-      owner "root"
-      group "root"
+      owner "apache"
+      group "apache"
       mode "0755"
       action :create
     end
 
     template "/var/www/depot/shared/config/database.yml" do
       source "database.yml.erb"
-      owner "root"
-      group "root"
+      owner "apache"
+      group "apache"
       mode "0644"
       variables ({ :db_host => best_ip_for(db_server) })
     end
@@ -48,6 +48,13 @@ deploy_revision "/var/www/depot" do
   restart_command "service httpd restart"
 end
 
+directory "/var/www/depot/current/tmp/cache" do
+  recursive true
+  owner "apache"
+  group "apache"
+  mode "0777"
+  action :create
+end
 
 web_app "depot" do
   docroot '/var/www/depot/current/public'
