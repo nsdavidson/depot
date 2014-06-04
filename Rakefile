@@ -57,11 +57,11 @@ task :test_dev do
   end
 end
 
-rake :teardown_dev
+task :teardown_dev
   puts "Tearing down dev environment..."
   cfn = Aws::CloudFormation.new
   cfn.delete_stack(stack_name: "depot-dev")
-  until cfn.describe_stacks(stack_name: "depot-dev") do
+  until cfn.describe_stacks(stack_name: "depot-dev").count == 0 do
     sleep 5
   end
   puts "CloudFormation and all resources destroyed"
