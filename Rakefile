@@ -57,7 +57,7 @@ task :test_dev do
   end
 end
 
-task :teardown_dev
+task :teardown_dev do
   puts "Tearing down dev environment..."
   cfn = Aws::CloudFormation.new
   cfn.delete_stack(stack_name: "depot-dev")
