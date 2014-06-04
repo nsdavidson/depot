@@ -32,13 +32,14 @@ end
 
 task :test_dev do
   url_to_test = File.read("url.txt")
+  puts "URL to test: #{url_to_test}"
   uri = URI.parse(url_to_test)
   http = Net::HTTP.new(uri.host, uri.port)
   request = Net::HTTP::Get.new(uri.request_uri)
 
   counter = 0
   print "Waiting for environment to become available..."
-  until http.request(request).code = 200 or counter > 900 do
+  until http.request(request).code == 200 or counter > 900 do
     print '.'
     sleep 30
     counter += 30
