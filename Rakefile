@@ -32,3 +32,11 @@ end
 task :test_dev do
   puts "URL to test: #{ENV["URL"]}"
 end
+
+task :test_value_set do
+  ENV["URL"] = "http://example.org"
+end
+
+task :test_value_get do
+  puts ENV["URL"]
+end
