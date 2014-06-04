@@ -23,5 +23,8 @@ task :build_dev do
   outputs = cfn.describe_stacks(stack_name: "depot-dev").first[0][0].outputs
   outputs.each do |op|
     puts "#{op.output_key} = #{op.output_value}"
+    ENV["#{op.output_key}"] = op.output_value
   end
+
+  put ENV["URL"]
 end
