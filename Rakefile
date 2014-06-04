@@ -3,6 +3,8 @@
 
 require File.expand_path('../config/application', __FILE__)
 require 'aws-sdk-core'
+require 'net/http'
+require 'uri'
 
 
 Depot::Application.load_tasks
@@ -23,14 +25,33 @@ task :build_dev do
   outputs = cfn.describe_stacks(stack_name: "depot-dev").first[0][0].outputs
   outputs.each do |op|
     puts "#{op.output_key} = #{op.output_value}"
-    ENV["#{op.output_key}"] = op.output_value
+    File.open('url.txt', 'w') { |file| file.write(op.output_value)}
   end
-
-  puts ENV["URL"]
 end
 
 task :test_dev do
-  puts "URL to test: #{ENV["URL"]}"
+  url_to_test = File.read("url.txt")
+  uri = URI.parse(url_to_test)
+  http = Net::HTTP.new(uri.host, uri.port)
+  request = Net::HTTP::Get.new(uri.request_uri)
+
+  counter = 0
+  print "Waiting for environment to become available..."
+  until http.request(request).code = 200 or counter > 900 do
+    print '.'
+    sleep 30
+    counter += 30
+  end
+
+  if counter < 900
+    puts "\n"
+    puts "Environment is now available at #{url_to_test}"
+  else
+    puts "\n"
+    puts "Environment has timed out.  Deleting stack."
+    cfn = Aws::CloudFormation.new
+    cfn.delete_stack(stack_name: "depot-dev")
+  end
 end
 
 task :test_value_set do
