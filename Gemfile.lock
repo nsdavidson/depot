@@ -29,6 +29,11 @@ GEM
       tzinfo (~> 1.1)
     addressable (2.3.6)
     arel (5.0.1.20140414130214)
+    aws-sdk-core (2.0.0.rc8)
+      builder (~> 3.0)
+      jamespath
+      multi_json (~> 1.0)
+      multi_xml (~> 0.5)
     berkshelf (3.1.2)
       addressable (~> 2.3.4)
       berkshelf-api-client (~> 1.2)
@@ -81,6 +86,7 @@ GEM
     hike (1.2.3)
     hitimes (1.2.1)
     i18n (0.6.9)
+    jamespath (0.5.0)
     jbuilder (2.0.7)
       activesupport (>= 3.0.0, < 5)
       multi_json (~> 1.2)
@@ -99,6 +105,7 @@ GEM
       mixlib-log
     mixlib-log (1.6.0)
     multi_json (1.10.1)
+    multi_xml (0.5.5)
     multipart-post (2.0.0)
     mysql2 (0.3.16)
     net-http-persistent (2.9.4)
@@ -207,6 +214,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  aws-sdk-core
   berkshelf
   coffee-rails (~> 4.0.0)
   jbuilder (~> 2.0)

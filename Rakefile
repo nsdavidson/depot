@@ -13,4 +13,15 @@ task :build_dev do
   cfn = Aws::CloudFormation.new
   template = File.read("depot-dev.template")
   cfn.create_stack(stack_name: "depot-dev", template_body: template)
+  print "Waiting for CloudFormation stack to build"
+  until !cfn.describe_stacks(stack_name: "depot-dev").first[0][0].stack_status.include?("CREATE_IN_PROGRESS") do
+    print "."
+    sleep 15
+  end
+  puts "\n"
+  puts "CloudFormation stack is complete..."
+  outputs = cfn.describe_stacks(stack_name: "depot-dev").first[0][0].outputs
+  outputs.each do |op|
+    puts "#{op.output_key} = #{op.output_value}"
+  end
 end
