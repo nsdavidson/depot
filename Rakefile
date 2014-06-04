@@ -40,7 +40,7 @@ task :test_dev do
 
   counter = 0
   print "Waiting for environment to become available..."
-  until http.request(request).code == 200 or counter > 900 do
+  until http.request(request).code == "200" or counter > 900 do
     print '.'
     sleep 30
     counter += 30
