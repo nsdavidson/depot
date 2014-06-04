@@ -30,13 +30,13 @@ task :build_dev do
 end
 
 task :test_dev do
-  puts File.read(aws_config.txt, 'w') 
+  puts "URL to test: #{ENV["URL"]}"
 end
 
 task :test_value_set do
-  ENV["URL"] = "http://example.org"
+  File.open('aws_info.txt', 'w') { |file| file.write("http://example.org")}
 end
 
 task :test_value_get do
-  puts ENV["URL"]
+  puts File.read("aws_info.txt")
 end
