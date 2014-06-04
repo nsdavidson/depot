@@ -26,5 +26,5 @@ task :build_dev do
     ENV["#{op.output_key}"] = op.output_value
   end
 
-  put ENV["URL"]
+  puts ENV["URL"]
 end
