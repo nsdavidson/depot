@@ -28,3 +28,7 @@ task :build_dev do
 
   puts ENV["URL"]
 end
+
+task :test_dev do
+  puts ENV["URL"]
+end
