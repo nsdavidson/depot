@@ -57,6 +57,16 @@ task :test_dev do
   end
 end
 
+rake :teardown_dev
+  puts "Tearing down dev environment..."
+  cfn = Aws::CloudFormation.new
+  cfn.delete_stack(stack_name: "depot-dev")
+  until cfn.describe_stacks(stack_name: "depot-dev") do
+    sleep 5
+  end
+  puts "CloudFormation and all resources destroyed"
+end
+
 task :test_value_set do
   File.open('aws_info.txt', 'w') { |file| file.write("http://example.org")}
 end
