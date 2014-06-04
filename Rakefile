@@ -31,7 +31,7 @@ task :build_dev do
 end
 
 task :test_dev do
-  sleep 30
+  sleep 60
   url_to_test = File.read("url.txt")
   puts "URL to test: #{url_to_test}"
   uri = URI.parse(url_to_test)
