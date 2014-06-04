@@ -27,6 +27,7 @@ task :build_dev do
     puts "#{op.output_key} = #{op.output_value}"
     File.open('url.txt', 'w') { |file| file.write(op.output_value)}
   end
+  puts File.read("url.txt")
 end
 
 task :test_dev do
