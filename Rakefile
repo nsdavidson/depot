@@ -30,7 +30,7 @@ task :build_dev do
 end
 
 task :test_dev do
-  puts "URL to test: #{ENV["URL"]}"
+  puts File.read(aws_config.txt, 'w') 
 end
 
 task :test_value_set do
