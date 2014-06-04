@@ -30,5 +30,5 @@ task :build_dev do
 end
 
 task :test_dev do
-  puts ENV["URL"]
+  puts "URL to test: #{ENV["URL"]}"
 end
