@@ -44,7 +44,7 @@
     "WebServerInstanceCount" : {
       "Description" : "Number of EC2 instances to launch",
       "Type" : "Number",
-      "Default" : "2"
+      "Default" : "1"
     },
 
     "AppServerInstanceType" : {
@@ -58,7 +58,7 @@
     "AppServerInstanceCount" : {
       "Description" : "Number of EC2 instances to launch",
       "Type" : "Number",
-      "Default" : "2"
+      "Default" : "1"
     },
 
     "DBServerInstanceType" : {

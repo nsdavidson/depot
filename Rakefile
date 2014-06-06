@@ -30,6 +30,38 @@ task :build_dev do
   puts File.read("url.txt")
 end
 
+task :build_qa do
+  cfn = Aws::CloudFormation.new
+  template = File.read("depot-dev.template")
+  cfn.create_stack(
+    stack_name: "depot-qa",
+    template_body: template,
+    parameters: [
+      {
+        parameter_key: "WebServerInstanceCount",
+        parameter_value: "2"
+      },
+      {
+        parameter_key: "AppServerInstanceCount",
+        parameter_value: "2"
+      }
+    ]
+  )
+  print "Waiting for CloudFormation stack to build"
+  until !cfn.describe_stacks(stack_name: "depot-qa").first[0][0].stack_status.include?("CREATE_IN_PROGRESS") do
+    print "."
+    sleep 15
+  end
+  puts "\n"
+  puts "CloudFormation stack is complete..."
+  outputs = cfn.describe_stacks(stack_name: "depot-qa").first[0][0].outputs
+  outputs.each do |op|
+    puts "#{op.output_key} = #{op.output_value}"
+    File.open('url.txt', 'w') { |file| file.write(op.output_value)}
+  end
+  puts File.read("url.txt")
+end
+
 task :test_dev do
   sleep 60
   url_to_test = File.read("url.txt")
@@ -67,10 +99,3 @@ task :teardown_dev do
   puts "CloudFormation and all resources destroyed"
 end
 
-task :test_value_set do
-  File.open('aws_info.txt', 'w') { |file| file.write("http://example.org")}
-end
-
-task :test_value_get do
-  puts File.read("aws_info.txt")
-end
