@@ -1,0 +1,1 @@
+http://depot-qa-ElasticLo-190MD7YSVX8DH-2141899218.us-east-1.elb.amazonaws.com

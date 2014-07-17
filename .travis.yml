@@ -1,0 +1,9 @@
+deploy:
+  provider: releases
+  api_key:
+    secure: Vy7TjCkayRnT4QaLKw9u2NJThYSvDhvDGe2NsT6jsuPrutcDWjhfGcssLKnha7fQxEaRFmcoFCfLoCLPNt1ySt6CC77Ldk4tKWm1HzF+7sIghk7zL28lCx0SXlSmVA1ogqqJyYQ8hKS02aWTvfbExBFLFlKVMYCNEAZVluZtRdY=
+  file: depot.zip
+  skip_cleanup: true
+  on:
+    tags: true
+    all_branches: true
